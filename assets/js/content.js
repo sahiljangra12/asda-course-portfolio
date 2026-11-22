@@ -1,0 +1,39 @@
+/* Course structure: six modules, sixteen lectures. Summaries are written in my own words. */
+window.COURSE = {
+  modules: [
+    { id: "m1", title: "Probability foundations", lectures: "Lectures 1 to 3", blurb: "Counting, conditional probability, random variables and the binomial family.",
+      items: [
+        { n: 1, title: "Probability, uncertainty and counting", summary: "Sample spaces and events, the equally-likely definition of probability and where it breaks, the counting rules (multiplication, permutations, combinations) and the axioms that replace the naive definition.", tex: "P(A)=\\frac{|A|}{|\\Omega|},\\qquad \\binom{n}{k}=\\frac{n!}{k!\\,(n-k)!}", labs: ["binomial"] },
+        { n: 2, title: "Conditional probability, Bayes' rule and random variables", summary: "Unions and intersections, conditioning, the multiplication rule, why independent is not the same as disjoint, and Bayes' rule. Then random variables: distributions, normalisation, mean and variance, with the binomial worked end to end.", tex: "P(A\\mid B)=\\frac{P(B\\mid A)\\,P(A)}{P(B)}", labs: ["binomial", "nhanes"] },
+        { n: 3, title: "CDFs and what the binomial turns into", summary: "The cumulative distribution function, then three limits of the same coin-toss model: a Gaussian when N is large, a Poisson when events are rare, and a geometric law for the wait until the first success.", tex: "P(X=k)=e^{-\\lambda}\\frac{\\lambda^{k}}{k!},\\qquad \\lambda=Np", labs: ["binomial", "horse", "quakes"] }
+      ] },
+    { id: "m2", title: "From probability to statistics", lectures: "Lectures 4 to 6", blurb: "Samples, the law of large numbers, the central limit theorem and standardisation.",
+      items: [
+        { n: 4, title: "Inequalities, random sampling and the law of large numbers", summary: "Markov and Chebyshev bounds that hold for any distribution, what an i.i.d. sample is, and why the sample mean is unbiased with a variance that shrinks like 1/n.", tex: "P(|X-\\mu|\\ge k\\sigma)\\le\\frac{1}{k^{2}},\\qquad \\operatorname{Var}(\\bar X)=\\frac{\\sigma^{2}}{n}", labs: ["nhanes", "clt"] },
+        { n: 5, title: "Central limit theorem and Monte Carlo", summary: "The sample mean settles on the population mean, and its leftover fluctuations are Gaussian whatever the population looks like. Applied to a Monte Carlo estimate of π, and to why the sample variance divides by n − 1.", tex: "\\frac{\\sqrt{n}\\,(\\bar X-\\mu)}{\\sigma}\\;\\xrightarrow{d}\\;\\mathcal N(0,1)", labs: ["clt"] },
+        { n: 6, title: "Standardisation and functions of random variables", summary: "Z-scores, the standard normal CDF and survival function, and how a distribution changes under a linear map Y = aX + b and under the nonlinear map Y = X².", tex: "Z=\\frac{X-\\mu}{\\sigma},\\qquad P(X\\le x)=\\Phi\\!\\left(\\frac{x-\\mu}{\\sigma}\\right)", labs: ["test"] }
+      ] },
+    { id: "m3", title: "Inference", lectures: "Lectures 7 and 8", blurb: "Confidence intervals, hypothesis tests and the z, t and Welch statistics.",
+      items: [
+        { n: 7, title: "Confidence intervals and hypothesis testing", summary: "Building a 95% interval and reading it correctly (the interval is random, the parameter is not). Then null and alternative hypotheses through worked cases: a teaching method, a possibly biased coin, an under-filling machine and a chip defect rate.", tex: "\\bar X\\pm 1.96\\,\\frac{\\sigma}{\\sqrt n}", labs: ["test"] },
+        { n: 8, title: "Test statistics and the method of moments", summary: "The z statistic, one-sided against two-sided alternatives, Student's t when σ is estimated, and Welch's t for two groups with unequal variances. The second half opens parameter estimation with the method of moments.", tex: "t=\\frac{\\bar X_1-\\bar X_2}{\\sqrt{s_1^{2}/n_1+s_2^{2}/n_2}}", labs: ["test", "horse"] }
+      ] },
+    { id: "m4", title: "Estimation", lectures: "Lectures 9 to 11", blurb: "Standard errors, the bootstrap, maximum likelihood and Bayesian updating.",
+      items: [
+        { n: 9, title: "Standard errors, the bootstrap and maximum likelihood", summary: "How much an estimate moves from sample to sample, analytically for the Poisson rate and the Gaussian mean and variance, and by parametric or nonparametric bootstrap when the algebra gets hard. Ends with maximum likelihood for both models.", tex: "\\hat\\theta_{\\mathrm{MLE}}=\\arg\\max_{\\theta}\\sum_{i=1}^{n}\\log p_\\theta(x_i)", labs: ["bootstrap", "horse"] },
+        { n: 10, title: "Why maximum likelihood works, and the road to Bayes", summary: "Large-sample behaviour of the MLE: consistency, asymptotic normality and the Cramér–Rao bound on how precise any unbiased estimator can be. Adding a prior gives MAP estimation and then the full posterior.", tex: "\\operatorname{Var}(\\hat\\theta)\\;\\ge\\;\\frac{1}{n\\,I(\\theta)}", labs: ["horse", "bayes"] },
+        { n: 11, title: "Bayesian updating", summary: "Yesterday's posterior is today's prior. Conjugate priors keep the update in closed form, the same machinery compares two hypotheses, and the lecture closes on what Bayesian inference buys and what it costs.", tex: "\\theta\\mid\\text{data}\\sim\\operatorname{Beta}(\\alpha+h,\\;\\beta+t)", labs: ["bayes", "gauss2d"] }
+      ] },
+    { id: "m5", title: "Regression", lectures: "Lectures 12 to 14", blurb: "Least squares, diagnostics, model complexity, ridge and cross-validation.",
+      items: [
+        { n: 12, title: "Linear regression", summary: "From estimating a mean to estimating a conditional mean. Simple regression, least squares as Gaussian maximum likelihood, the matrix form, multiple regression, and the bias and variance of the least-squares estimator.", tex: "\\hat{\\boldsymbol\\beta}=(X^{\\top}X)^{-1}X^{\\top}\\mathbf y,\\qquad \\operatorname{Var}(\\hat{\\boldsymbol\\beta})=\\sigma^{2}(X^{\\top}X)^{-1}", labs: ["penguins", "diabetes"] },
+        { n: 13, title: "Is the model any good? Diagnostics", summary: "R², the assumptions behind the model and how residual plots expose them: non-constant variance, outliers, leverage and influence, collinearity and a badly conditioned design matrix, Q–Q plots, and uncertainty in each coefficient.", tex: "R^{2}=1-\\frac{\\mathrm{RSS}}{\\mathrm{TSS}}", labs: ["penguins", "diabetes"] },
+        { n: 14, title: "Model complexity, ridge regression and cross-validation", summary: "Polynomial features make a linear model bend. More flexibility lowers bias and raises variance; ridge trades a little bias for stability; and K-fold cross-validation picks the complexity without touching the test set.", tex: "\\hat{\\boldsymbol\\beta}_{\\text{ridge}}=(X^{\\top}X+\\lambda I)^{-1}X^{\\top}\\mathbf y", labs: ["polycv", "diabetes"] }
+      ] },
+    { id: "m6", title: "Model selection and regularisation", lectures: "Lectures 15 and 16", blurb: "Subset search, AIC and BIC, the one-standard-error rule, ridge against lasso.",
+      items: [
+        { n: 15, title: "Model selection", summary: "Best-subset, forward and backward search over candidate predictors; adjusted R², AIC and BIC as corrections for the optimism of training error; cross-validation with the one-standard-error rule; and the difference between predicting well and finding the true model.", tex: "\\mathrm{AIC}=2k-2\\hat\\ell,\\qquad \\mathrm{BIC}=k\\ln n-2\\hat\\ell", labs: ["polycv"] },
+        { n: 16, title: "Ridge and lasso", summary: "Controlling the size of the coefficients instead of the number of predictors. Why the lasso's corner-shaped constraint sets coefficients exactly to zero, how the two penalties correspond to Gaussian and Laplace priors, and why scaling has to happen inside each fold.", tex: "\\min_{\\boldsymbol\\beta}\\;\\lVert\\mathbf y-X\\boldsymbol\\beta\\rVert_2^{2}+\\lambda\\lVert\\boldsymbol\\beta\\rVert_1", labs: ["diabetes", "polycv"] }
+      ] }
+  ]
+};
