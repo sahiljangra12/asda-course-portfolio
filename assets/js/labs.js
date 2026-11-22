@@ -1,4 +1,4 @@
-/* Twelve interactive labs. Each lab is { controls, state, view(state) -> {tiles, charts, notice} }. */
+/* Thirteen interactive labs. Each lab is { controls, state, view(state) -> {tiles, charts, notice} }. */
 (function () {
   const C = Chart.C, D = window.DATA, f = (v, d = 3) => Number(v).toFixed(d), pct = (v, d = 1) => (100 * v).toFixed(d) + "%";
   const big = v => Math.round(v).toLocaleString("en-US");
@@ -55,7 +55,7 @@
       return {
         tiles: [{ k: "Adults in sample", v: big(n) }, { k: `P(household ≥ ${s.k})`, v: f(ph, 3), s: "mean of the indicator B" }, { k: "Bernoulli variance p(1−p)", v: f(ph * (1 - ph), 3) }, { k: `P(${a} < height < ${b})`, v: f(pi, 3), s: `Gaussian model says ${f(pn, 3)}` }, { k: "Height mean and SD", v: `${f(mu, 1)} cm`, s: `SD ${f(sd, 2)} cm` }],
         charts: [
-          { title: "Discrete: household size", sub: "Empirical PMF; the CDC codes 7 as “7 or more”. Darker bars are the event B = 1.", spec: { x: { label: "People in household", domain: [0.4, 7.6], ticks: [1, 2, 3, 4, 5, 6, 7], format: v => v === 7 ? "7+" : v }, y: { label: "Empirical probability", zero: true }, layers: [{ type: "bars", data: pmf.map(d => ({ x: d.value, y: d.prob, n: d.count, color: d.value >= s.k ? C.navy : "#9fc0ea" })), width: 0.8, tip: d => `<b>${d.x === 7 ? "7 or more" : d.x} people</b><br>${big(d.n)} adults, ${pct(d.y)}` }], legend: [{ label: `B = 1 (size ≥ ${s.k})`, color: C.navy }, { label: "B = 0", color: "#9fc0ea" }] } },
+          { title: "Discrete: household size", sub: "Empirical PMF; the CDC codes 7 as “7 or more”. Darker bars are the event B = 1.", spec: { x: { label: "People in household", domain: [0.4, 7.6], ticks: [1, 2, 3, 4, 5, 6, 7], format: v => v === 7 ? "7+" : v }, y: { label: "Empirical probability", zero: true }, layers: [{ type: "bars", data: pmf.map(d => ({ x: d.value, y: d.prob, n: d.count, color: d.value >= s.k ? C.navy : "#2c4666" })), width: 0.8, tip: d => `<b>${d.x === 7 ? "7 or more" : d.x} people</b><br>${big(d.n)} adults, ${pct(d.y)}` }], legend: [{ label: `B = 1 (size ≥ ${s.k})`, color: C.navy }, { label: "B = 0", color: "#2c4666" }] } },
           { title: "Continuous: standing height", sub: "Histogram as a density, with the fitted Gaussian. The shaded band is the interval.", spec: { x: { label: "Height (cm)", domain: [138, 198] }, y: { label: "Density", zero: true }, layers: [{ type: "band", x0: a, x1: b, color: C.orange, opacity: 0.16 }, { type: "bars", data: hist.map(d => ({ x: d.x, y: d.density, n: d.count, x0: d.x0, x1: d.x1 })), width: 2, color: C.blue, tip: d => `<b>${f(d.x0, 0)}–${f(d.x1, 0)} cm</b><br>${big(d.n)} adults` }, { type: "line", data: S.linspace(138, 198, 150).map(x => ({ x, y: S.normPdf(x, mu, sd) })), color: C.ink }], legend: [{ label: "Observed", color: C.blue }, { label: "Gaussian fit", color: C.ink, kind: "line" }] } },
           { wide: true, title: "How uncertain is a sample proportion?", sub: `If only N adults had been measured, the standard deviation of p̂ would be √(p(1−p)/N), using p = ${f(ph, 3)}.`, spec: { h: 230, x: { label: "Sample size N" }, y: { label: "SD of p̂", zero: true }, layers: [{ type: "line", data: Ns, color: C.blue, tip: d => `N = ${d.x}: SD(p̂) = ${f(d.y, 4)}` }] } }
         ],
@@ -218,7 +218,7 @@
 
   /* ---------- 8. 2D Gaussian ---------- */
   LABS.push({
-    id: "gauss2d", group: "Estimation", title: "Shape of a two-dimensional Gaussian", from: "Multivariate notebooks, before Lecture 12",
+    id: "gauss2d", group: "Estimation", title: "Shape of a two-dimensional Gaussian", from: "Lectures 11 and 12",
     intro: "A covariance matrix is a shape. The sliders set the two standard deviations and the correlation; the ellipses are the 1σ and 2σ contours and the lines are the eigenvectors, scaled by the square roots of the eigenvalues.",
     state: { s1: 1.5, s2: 1, rho: 0.6, seed: 1 },
     controls: [
@@ -329,33 +329,51 @@
     }
   });
 
-  /* ---------- 12. Earthquakes (live) ---------- */
-  const quakeCache = {};
+  /* ---------- Earthquakes (USGS catalogue snapshot) ---------- */
   LABS.push({
-    id: "quakes", group: "Probability", title: "Are large earthquakes Poisson? (live USGS data)", from: "Lecture 3 notebook",
-    intro: "This lab downloads the global catalogue of large earthquakes from the US Geological Survey when you open it, counts them per calendar month from 1900 to 2025, and compares the counts with a Poisson model.",
-    state: { mag: "7.0" },
-    controls: [{ type: "select", key: "mag", label: "Minimum magnitude", options: [["6.85", "6.85 (as in the course notebook)"], ["7.0", "7.0"], ["7.5", "7.5"]] }],
-    view(s, rerender) {
-      const c = quakeCache[s.mag];
-      if (!c) { quakeCache[s.mag] = { loading: true };
-        fetch(`https://earthquake.usgs.gov/fdsnws/event/1/query?format=csv&starttime=1900-01-01&endtime=2025-12-31&minmagnitude=${s.mag}&orderby=time-asc`).then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
-          .then(t => { const m = new Array(1512).fill(0), yr = new Array(126).fill(0); let n = 0; t.split("\n").slice(1).forEach(l => { const y = +l.slice(0, 4), mo = +l.slice(5, 7); if (y >= 1900 && y <= 2025 && mo >= 1) { m[(y - 1900) * 12 + mo - 1]++; yr[y - 1900]++; n++; } }); if (!n) throw new Error("empty response"); quakeCache[s.mag] = { m, yr, n }; rerender(); })
-          .catch(e => { quakeCache[s.mag] = { error: String(e.message || e) }; rerender(); });
-        return { tiles: [], charts: [], status: "Downloading the catalogue from earthquake.usgs.gov…" }; }
-      if (c.loading) return { tiles: [], charts: [], status: "Downloading the catalogue from earthquake.usgs.gov…" };
-      if (c.error) return { tiles: [], charts: [], status: `The USGS catalogue could not be reached (${c.error}). This lab needs a live connection to earthquake.usgs.gov; the other eleven labs work offline. Reload to try again.` };
-      const mean = S.mean(c.m), v = S.variance(c.m, 0), kmax = Math.max(S.max(c.m), Math.ceil(mean + 5 * Math.sqrt(mean))), ks = S.range(0, kmax), emp = ks.map(k => ({ x: k, y: c.m.filter(q => q === k).length / c.m.length }));
+    id: "quakes", group: "Probability", title: "Are large earthquakes Poisson?", from: "Lecture 3",
+    intro: "Every large earthquake in the US Geological Survey catalogue from 1900 to 2025, counted per calendar month. If big earthquakes arrived independently at a steady rate, these 1,512 monthly counts would follow a Poisson distribution.",
+    state: { mag: "6.85" },
+    controls: [{ type: "select", key: "mag", label: "Minimum magnitude", options: [["6.85", "6.85 and above"], ["7.0", "7.0 and above"], ["7.5", "7.5 and above"]] }],
+    view(s) {
+      const m = [...D.quakes[s.mag]].map(ch => parseInt(ch, 36)), yr = []; for (let y = 0; y < 126; y++) yr.push(S.sum(m.slice(y * 12, y * 12 + 12)));
+      const n = S.sum(m), mean = S.mean(m), v = S.variance(m, 0), kmax = Math.max(S.max(m), Math.ceil(mean + 5 * Math.sqrt(mean))), ks = S.range(0, kmax), emp = ks.map(k => ({ x: k, y: m.filter(q => q === k).length / m.length, n: m.filter(q => q === k).length }));
+      const busy = Math.ceil(mean + 3 * Math.sqrt(mean)), obsBusy = m.filter(q => q >= busy).length, expBusy = m.length * (1 - S.sum(S.range(0, busy - 1).map(k => S.poisPmf(k, mean))));
       return {
-        tiles: [{ k: `Earthquakes of magnitude ≥ ${s.mag}`, v: big(c.n), s: "1900 to 2025" }, { k: "Months", v: big(c.m.length) }, { k: "Mean per month λ̂", v: f(mean, 3) }, { k: "Variance", v: f(v, 3) }, { k: "Variance / mean", v: f(v / mean, 2), s: "1.00 for an exact Poisson" }],
+        tiles: [{ k: `Earthquakes, magnitude ≥ ${s.mag}`, v: big(n), s: "1900 to 2025" }, { k: "Mean per month λ̂", v: f(mean, 3) }, { k: "Variance", v: f(v, 3) }, { k: "Variance / mean", v: f(v / mean, 2), s: "1.00 for an exact Poisson" }, { k: `Months with ${busy} or more`, v: obsBusy, s: `Poisson expects ${f(expBusy, 1)}` }],
         charts: [
-          { title: "Monthly counts against Poisson(λ̂)", sub: "Bars: share of months with k earthquakes. Line: Poisson with the same mean.", spec: { x: { label: "Earthquakes in one month k", domain: [-0.6, kmax + 0.6] }, y: { label: "Probability", zero: true }, layers: [{ type: "bars", data: emp, width: 0.8, color: C.blue, tip: d => `<b>k = ${d.x}</b><br>observed ${pct(d.y)}<br>Poisson ${pct(S.poisPmf(d.x, mean))}` }, { type: "line", data: ks.map(k => ({ x: k, y: S.poisPmf(k, mean) })), color: C.orange }, { type: "dots", data: ks.map(k => ({ x: k, y: S.poisPmf(k, mean) })), color: C.orange, r: 4, opacity: 1 }], legend: [{ label: "Observed", color: C.blue }, { label: "Poisson", color: C.orange, kind: "dot" }] } },
-          { title: "Earthquakes per year", sub: "A constant-rate model predicts a flat band; clusters are aftershock sequences.", spec: { x: { label: "Year", domain: [1899, 2026], format: v => v }, y: { label: "Count", zero: true }, layers: [{ type: "bars", data: c.yr.map((y, i) => ({ x: 1900 + i, y })), width: 1, color: C.blue, tip: d => `<b>${d.x}</b>: ${d.y} earthquakes` }, { type: "hline", y: mean * 12, color: C.ink, label: "long-run mean" }] } }
+          { title: "Monthly counts against Poisson(λ̂)", sub: "Bars: share of months with k earthquakes. Dots: Poisson with the same mean.", spec: { x: { label: "Earthquakes in one month k", domain: [-0.6, kmax + 0.6] }, y: { label: "Probability", zero: true }, layers: [{ type: "bars", data: emp, width: 0.8, color: C.blue, tip: d => `<b>k = ${d.x}</b>: ${d.n} months<br>observed ${pct(d.y)}<br>Poisson ${pct(S.poisPmf(d.x, mean))}` }, { type: "line", data: ks.map(k => ({ x: k, y: S.poisPmf(k, mean) })), color: C.orange }, { type: "dots", data: ks.map(k => ({ x: k, y: S.poisPmf(k, mean) })), color: C.orange, r: 4, opacity: 1 }], legend: [{ label: "Observed", color: C.blue }, { label: "Poisson", color: C.orange, kind: "dot" }] } },
+          { title: "Earthquakes per year", sub: "A constant-rate model predicts a flat band around the dashed line.", spec: { x: { label: "Year", domain: [1899, 2026], format: v => v }, y: { label: "Count", zero: true }, layers: [{ type: "bars", data: yr.map((y, i) => ({ x: 1900 + i, y })), width: 1, color: C.blue, tip: d => `<b>${d.x}</b>: ${d.y} earthquakes` }, { type: "hline", y: mean * 12, color: C.ink, label: "long-run mean" }] } }
         ],
-        notice: "A Poisson model assumes events arrive independently at a constant rate, so its variance equals its mean. Earthquakes break the first assumption: a large shock triggers aftershocks, months with many events are more common than Poisson allows, and the variance exceeds the mean. Raising the magnitude threshold thins out the aftershocks and brings the ratio back toward 1."
+        notice: `The variance is ${f(v / mean, 2)} times the mean, where a Poisson demands 1. Busy months are the reason: ${obsBusy} months had ${busy} or more earthquakes against ${f(expBusy, 1)} expected. Large shocks trigger aftershocks, so events are not independent. The Poisson is still a useful first description of the bulk of the months; it fails in the tail, which is where the risk is.`
       };
     }
   });
+
+  /* ---------- S&P 500: Gaussian MLE ---------- */
+  LABS.push({
+    id: "sp500", group: "Estimation", title: "Market returns: the best Gaussian is still a Gaussian", from: "Lecture 9",
+    intro: "Daily closing values of the S&P 500 from January 2024 to October 2026, from the Federal Reserve's FRED database. Turn prices into log-returns, fit a Gaussian by maximum likelihood, then ask the question the fit cannot answer for itself.",
+    state: { period: "all" },
+    controls: [{ type: "select", key: "period", label: "Period", options: [["all", "All data, 2024 to 2026"], ["2024", "2024"], ["2025", "2025"], ["2026", "2026 to 5 October"]] }],
+    view(s) {
+      const SP = D.sp500, ys = SP.yearStart, P = SP.cents.map(c => c / 100), a = s.period === "all" ? 0 : ys[s.period], b = s.period === "all" || s.period === "2026" ? P.length : ys[String(+s.period + 1)], p = P.slice(a, b);
+      const r = []; for (let i = 1; i < p.length; i++) r.push(Math.log(p[i] / p[i - 1]));
+      const n = r.length, mu = S.mean(r), sg = S.sd(r, 0), se = sg / Math.sqrt(n), z = r.map(v => (v - mu) / sg), out3 = z.filter(v => Math.abs(v) > 3).length, exp3 = n * 2 * (1 - S.normCdf(3)), zmax = z.reduce((m, v) => Math.abs(v) > Math.abs(m) ? v : m, 0);
+      const lim = Math.max(...r.map(Math.abs)) * 1.02, bins = 49, hist = S.hist(r, bins, -lim, lim), ticks = Object.entries(ys).filter(([, i]) => i >= a && i < b).map(([, i]) => i);
+      return {
+        tiles: [{ k: "Daily returns", v: n, s: `${p.length} closing values` }, { k: "Mean return μ̂", v: (100 * mu).toFixed(3) + "% a day", s: `SE ${(100 * se).toFixed(3)}%` }, { k: "Volatility σ̂", v: (100 * sg).toFixed(3) + "% a day", s: "1/n maximum likelihood" }, { k: "Days beyond 3σ̂", v: out3, s: `a Gaussian expects ${f(exp3, 1)}` }, { k: "Largest move", v: f(Math.abs(zmax), 1) + " σ̂", s: (zmax > 0 ? "up " : "down ") + (100 * Math.abs(zmax * sg + mu)).toFixed(1) + "% in a day" }],
+        charts: [
+          { title: "The index", sub: "Closing value; prices trend, so they are not independent draws.", spec: { x: { label: "Trading day", domain: [a, b - 1], ticks, format: v => Object.keys(ys).find(k => ys[k] === v) || "" }, y: { label: "S&P 500" }, layers: [{ type: "line", data: p.map((v, i) => ({ x: a + i, y: v })), color: C.blue, tip: d => `close ${d.y.toLocaleString("en-US", { maximumFractionDigits: 0 })}` }] } },
+          { title: "Daily log-returns against the fitted Gaussian", sub: "Histogram as a density; the curve is N(μ̂, σ̂²).", spec: { x: { label: "Daily log-return", domain: [-lim, lim], format: v => (100 * v).toFixed(0) + "%" }, y: { label: "Density", zero: true }, layers: [{ type: "band", x0: -lim, x1: mu - 3 * sg, color: C.orange, opacity: 0.09 }, { type: "band", x0: mu + 3 * sg, x1: lim, color: C.orange, opacity: 0.09 }, { type: "bars", data: hist.map(d => ({ x: d.x, y: d.density, n: d.count })), width: 2 * lim / bins, color: C.blue, tip: d => `around ${(100 * d.x).toFixed(2)}%<br>${d.n} days` }, { type: "line", data: S.linspace(-lim, lim, 240).map(x => ({ x, y: S.normPdf(x, mu, sg) })), color: C.ink }], legend: [{ label: "Observed", color: C.blue }, { label: "Gaussian MLE", color: C.ink, kind: "line" }, { label: "Beyond 3σ̂", color: C.orange }] } }
+        ],
+        notice: out3 > exp3 * 1.5 ? `${out3} days moved more than three standard deviations; a Gaussian with these parameters expects ${f(exp3, 1)}. The largest was ${f(Math.abs(zmax), 1)}σ̂, which a Gaussian would produce essentially never. The histogram is also taller and narrower in the middle than the curve. Maximum likelihood did its job, finding the best Gaussian, and the data say the Gaussian family is too thin-tailed for returns.` : `In this period ${out3} days moved more than three standard deviations against ${f(exp3, 1)} expected, so the Gaussian is a fair description here. Switch to “All data” to see the extreme days that a calm year hides.`
+      };
+    }
+  });
+
+  const ORDER = ["binomial", "nhanes", "quakes", "clt", "test", "horse", "sp500", "bootstrap", "bayes", "gauss2d", "penguins", "diabetes", "polycv"];
+  LABS.sort((p, q) => ORDER.indexOf(p.id) - ORDER.indexOf(q.id));
 
   window.LABS = LABS;
 })();
