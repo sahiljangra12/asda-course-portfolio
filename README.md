@@ -16,16 +16,16 @@ Plain HTML, CSS and JavaScript with no build step and no charting library.
 
 | File | Purpose |
 |---|---|
-| `assets/js/stats.js` | Distributions, seeded random numbers, least squares, ridge, t quantiles |
-| `assets/js/charts.js` | SVG chart helper with hover tooltips |
-| `assets/js/labs.js` | The thirteen labs |
-| `assets/js/learn.js` | The idea, missions and quiz for each lab |
-| `assets/js/reports.js` | The six reports; every figure in the text is computed from the data |
-| `assets/js/data.js` | The eight datasets |
+| `docs/assets/js/stats.js` | Distributions, seeded random numbers, least squares, ridge, t quantiles |
+| `docs/assets/js/charts.js` | SVG chart helper with hover tooltips |
+| `docs/assets/js/labs.js` | The thirteen labs |
+| `docs/assets/js/learn.js` | The idea, missions and quiz for each lab |
+| `docs/assets/js/reports.js` | The six reports; every figure in the text is computed from the data |
+| `docs/assets/js/data.js` | The eight datasets |
 
 The course notebooks are in Python. Their analyses are re-implemented here in JavaScript and were checked against the notebook outputs (for example, the penguin regression gives intercept -5780.83 g and slope 49.69 g/mm, and the ten-predictor diabetes model matches every coefficient and standard error).
 
-To run locally: `python3 -m http.server` in this folder, then open http://localhost:8000.
+To run locally: `python3 -m http.server` in the `docs` folder, then open http://localhost:8000.
 
 ## Credits
 
