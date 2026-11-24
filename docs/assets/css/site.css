@@ -196,3 +196,10 @@ table.data th { font-weight: 600; font-size: .72rem; letter-spacing: .1em; text-
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .btn, .btn::before, .top nav a::after { transition: none; } }
 
 .hat { font-family: "Times New Roman", "STIX Two Text", "Cambria", "Noto Serif", serif; font-style: italic; text-transform: none; letter-spacing: 0; }
+
+/* Phones: finger-sized navigation */
+@media (max-width: 640px) {
+  .brand { min-height: 44px; }
+  .top nav a { display: inline-flex; align-items: center; min-height: 44px; }
+  .top nav a::after { bottom: 8px; }
+}
